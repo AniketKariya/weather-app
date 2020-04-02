@@ -1,10 +1,11 @@
 const path = require("path");
 const express = require("express");
 const hbs = require("hbs");
-const geocode = require("./utils/geocode")
-const forecast = require("./utils/forecast")
+const geocode = require("./utils/geocode");
+const forecast = require("./utils/forecast");
 
 const app = express();
+const port = process.env.PORT || 3000;
 
 // Define paths for express config
 const publicDirPath = path.join(__dirname, "../public");
@@ -38,43 +39,46 @@ app.get("/about", (req, res) => {
 });
 
 app.get("/weather", (req, res) => {
-	if(!req.query.location) {
+	if (!req.query.location) {
 		return res.send({
-			error: 'You must provide a location!'
-		})
+			error: "You must provide a location!"
+		});
 	}
-	
-	geocode(req.query.location, (error, {latitude, longitude, location} = {}) => {
-		if (error) {
-			return res.send(error);
-		}
-	
-		forecast(latitude, longitude, (error, summary) => {
+
+	geocode(
+		req.query.location,
+		(error, { latitude, longitude, location } = {}) => {
 			if (error) {
 				return res.send(error);
 			}
-			res.send({
-				summary: summary,
-				location: location
-			})
-		});
-	});	
-})
 
-app.get('/help/*', (req, res) => {
-	res.render('404', {
+			forecast(latitude, longitude, (error, summary) => {
+				if (error) {
+					return res.send(error);
+				}
+				res.send({
+					summary: summary,
+					location: location
+				});
+			});
+		}
+	);
+});
+
+app.get("/help/*", (req, res) => {
+	res.render("404", {
 		title: 404,
-		errorMessage: 'Help article not found'
-	})
-})
+		errorMessage: "Help article not found"
+	});
+});
 
-app.get('*', (req, res) => {
-	res.render('404', {
+app.get("*", (req, res) => {
+	res.render("404", {
 		title: 404,
-		errorMessage: 'Page not found'
-	})
-})
+		errorMessage: "Page not found"
+	});
+});
 
-app.listen(3000, () => {
-	console.log("Server is up on port 3000");
+app.listen(port, () => {
+	console.log("Server is up on port " + port);
 });
